@@ -34,8 +34,8 @@ struct vec4x;
 // ----------------------------------
 // integer
 struct vec2i {
-    signed long x;
-    signed long y;
+    int32_t x;
+    int32_t y;
     
     // add/subtract another vec2i
     inline vec2i& operator+=(const vec2i & rhs) {x += rhs.x; y += rhs.y; return *this;}
@@ -64,9 +64,9 @@ struct vec2i {
 };
 
 // dot product
-inline signed long dot (const vec2i& lhs, const vec2i& rhs) {return (lhs.x*rhs.x + lhs.y*rhs.y);}
+inline int32_t dot (const vec2i& lhs, const vec2i& rhs) {return (lhs.x*rhs.x + lhs.y*rhs.y);}
 // length
-inline signed long abs (const vec2i& lhs) {return sqrt(lhs.x*lhs.x + lhs.y*lhs.y);}
+inline int32_t abs (const vec2i& lhs) {return sqrt(lhs.x*lhs.x + lhs.y*lhs.y);}
 // norm
 inline vec2i norm(const vec2i& lhs) {vec2i r = lhs; return (r / abs(r));}
 
@@ -113,8 +113,8 @@ inline vec2f norm(const vec2f& lhs) {vec2f r = lhs; return r*Q_rsqrt(r.x*r.x + r
 // ----------------------------------
 // fixed point 16:16
 struct vec2x {
-    signed long x;
-    signed long y;
+    int32_t x;
+    int32_t y;
     
     // add/subtract another vec2f
     inline vec2x& operator+=(const vec2x & rhs) {x += rhs.x; y += rhs.y; return *this;}
@@ -125,13 +125,13 @@ struct vec2x {
     inline vec2x& operator/=(const signed rhs) {x /= rhs; y /= rhs;   return *this;}
     
     inline vec2x& operator*=(const float  rhs) {
-        x = imul16(x, (signed long)(rhs*65536.0f));
-        y = imul16(y, (signed long)(rhs*65536.0f));
+        x = imul16(x, (int32_t)(rhs*65536.0f));
+        y = imul16(y, (int32_t)(rhs*65536.0f));
         return *this;
     }
     inline vec2x& operator/=(const float  rhs) {
-        x = idiv16(x, (signed long)(rhs*65536.0f));
-        y = idiv16(y, (signed long)(rhs*65536.0f));
+        x = idiv16(x, (int32_t)(rhs*65536.0f));
+        y = idiv16(y, (int32_t)(rhs*65536.0f));
         return *this;
     }
     
@@ -221,9 +221,9 @@ inline vec3f norm (const vec3f& lhs) {vec3f r = lhs; return r*Q_rsqrt(r.x*r.x + 
 // ----------------------------------
 // fixed point 16:16
 struct vec3x {
-    signed long x;
-    signed long y;
-    signed long z;
+    int32_t x;
+    int32_t y;
+    int32_t z;
     
     // add/subtract another vec2f
     inline vec3x& operator+=(const vec3x & rhs) {x += rhs.x; y += rhs.y; z += rhs.z; return *this;}
@@ -231,15 +231,15 @@ struct vec3x {
     
     // multiply/divide by scalar
     inline vec3x& operator*=(const float  rhs) {
-        x = imul16(x, (signed long)(rhs*65536.0f));
-        y = imul16(y, (signed long)(rhs*65536.0f));
-        z = imul16(z, (signed long)(rhs*65536.0f));
+        x = imul16(x, (int32_t)(rhs*65536.0f));
+        y = imul16(y, (int32_t)(rhs*65536.0f));
+        z = imul16(z, (int32_t)(rhs*65536.0f));
         return *this;
     }
     inline vec3x& operator/=(const float  rhs) {
-        x = idiv16(x, (signed long)(rhs*65536.0f));
-        y = idiv16(y, (signed long)(rhs*65536.0f));
-        z = idiv16(z, (signed long)(rhs*65536.0f));
+        x = idiv16(x, (int32_t)(rhs*65536.0f));
+        y = idiv16(y, (int32_t)(rhs*65536.0f));
+        z = idiv16(z, (int32_t)(rhs*65536.0f));
         return *this;
     }
     
@@ -330,10 +330,10 @@ inline vec4f norm (const vec4f& lhs) {vec4f r = lhs; return r*Q_rsqrt(r.x*r.x + 
 // ----------------------------------
 // fixed point 16:16
 struct vec4x {
-    signed long x;
-    signed long y;
-    signed long z;
-    signed long w;
+    int32_t x;
+    int32_t y;
+    int32_t z;
+    int32_t w;
     
     // add/subtract another vec2f
     inline vec4x& operator+=(const vec4x & rhs) {x += rhs.x; y += rhs.y; z += rhs.z; return *this;}
@@ -341,15 +341,15 @@ struct vec4x {
     
     // multiply/divide by scalar
     inline vec4x& operator*=(const float  rhs) {
-        x = imul16(x, (signed long)(rhs*65536.0f));
-        y = imul16(y, (signed long)(rhs*65536.0f));
-        z = imul16(z, (signed long)(rhs*65536.0f));
+        x = imul16(x, (int32_t)(rhs*65536.0f));
+        y = imul16(y, (int32_t)(rhs*65536.0f));
+        z = imul16(z, (int32_t)(rhs*65536.0f));
         return *this;
     }
     inline vec4x& operator/=(const float  rhs) {
-        x = idiv16(x, (signed long)(rhs*65536.0f));
-        y = idiv16(y, (signed long)(rhs*65536.0f));
-        z = idiv16(z, (signed long)(rhs*65536.0f));
+        x = idiv16(x, (int32_t)(rhs*65536.0f));
+        y = idiv16(y, (int32_t)(rhs*65536.0f));
+        z = idiv16(z, (int32_t)(rhs*65536.0f));
         return *this;
     }
     
@@ -387,10 +387,10 @@ inline vec4x norm(const vec4x& lhs) {vec4x r = lhs; return (r / abs(r));}
 // ----------------------------------
 // integer
 struct vec4i {
-    signed long x;
-    signed long y;
-    signed long z;
-    signed long w;
+    int32_t x;
+    int32_t y;
+    int32_t z;
+    int32_t w;
     
     // add/subtract another vec2f
     inline vec4i& operator+=(const vec4i & rhs) {x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w; return *this;}

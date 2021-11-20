@@ -12,11 +12,6 @@
 
 #include "vec.h"
 
-#define min(a, b) (((a) > (b)) ? (b) : (a))
-#define max(a, b) (((a) < (b)) ? (b) : (a))
-
-const float PI = 3.141592653589793;
-
 enum {
     X_RES = 320,
     Y_RES = 200,
@@ -62,12 +57,15 @@ struct grid {
     int32_t u, v;
 };
 
+// grid table
 grid grid[(Y_GRID+1)*(X_GRID+1)];
 
+// map texture to screen using calculated U/V grid
 void renderScreen(uint32_t frameCounter) {   
     // interpolation sturct
     typedef struct {int sdy, edy, dx, sy, ey, sx;} _fd;
     
+    // pointers and other stuff
     size_t gridptr = 0;
     uint8_t *p = screen;
     uint8_t *t = texture;
@@ -79,6 +77,7 @@ void renderScreen(uint32_t frameCounter) {
     for (int j = 0; j < Y_GRID; j++) {
         for (int i = 0; i < X_GRID; i++) {
             
+            // prepare for U/V interpolation across each 8x8 cell
             u.sdy = (grid[gridptr+X_GRID+1].u - grid[gridptr].u) >> 3;
             u.sy  = (grid[gridptr].u);
             
@@ -105,7 +104,8 @@ void renderScreen(uint32_t frameCounter) {
                 xdu = u.dx;
                 xdv = v.dx;
                 
-                
+                // assembly texture mapping innerloop
+                    
                 _asm {
                     xor     eax, eax
                     mov     ebx, xu
@@ -113,6 +113,10 @@ void renderScreen(uint32_t frameCounter) {
                     mov     ecx, 8
                     mov     esi, t
                     mov     edi, p
+                    
+                    // finally, the inner loop
+                    // still there is enough room for optimization (i.e. unrolling or writing 4 pixels at once),
+                    // but that's left as exercise :)
                     
                     _loop:
                     mov     ah, bh              // 1
@@ -130,18 +134,21 @@ void renderScreen(uint32_t frameCounter) {
                     jnz     _loop               // 5
                 }
                 
-                
+                // advance 
                 p += X_RES;
                 u.sy += u.sdy; u.ey += u.edy; v.sy += v.sdy; v.ey += v.edy;
             }
+            // advance grid and "rewind" to top of screen
             gridptr++;
             p -= (X_RES * 8) - 8;
         }
+        // compensate for grid boundary, advance destination
         gridptr++;
         p += (X_RES * 7);
     } 
 }
 
+// build U/V grid
 void makeGrid(uint32_t frameCounter) {
 
     size_t tptr = 0;
@@ -151,24 +158,26 @@ void makeGrid(uint32_t frameCounter) {
 
     float ax, ay;
     
+    // rescale time base
     int32_t t = (frameCounter * 60) / 1024;
     
-    for (int32_t y = -Y_GRID/2; y <= Y_GRID/2; y++) {
-        for (int32_t x = -X_GRID/2; x <= X_GRID/2; x++) {
+    // trace the grid, including boundary column/row
+    for (int32_t y = -Y_RES/2; y <= Y_RES/2; y += 8) {
+        for (int32_t x = -X_RES/2; x <= X_RES/2; x += 8) {
             
-            ax = (x * 8) + 64*sintabf[((t << 7) + (x << 8)) & 0xFFFF] +
-                  (32*sintabf[((y << 7) + (t << 6)) & 0xFFFF] + 32) * 
-                   sintabf[((y << 6) + (x << 9) + (t << 4)) & 0xFFFF] + 
-                   64*sintabf[((t << 8) + (x << 10)) & 0xFFFF] +
-                   32*sintabf[((t << 8) + (y << 10)) & 0xFFFF]; 
-            ay = (y * 8) + 64*sintabf[((t << 7) + (y << 7)) & 0xFFFF] +
+            ax = x + 64*sintabf[((t << 7) + (x << 5)) & 0xFFFF] +
+                  (32*sintabf[((y << 4) + (t << 6)) & 0xFFFF] + 32) * 
+                   sintabf[((y << 6) + (x << 7) + (t << 4)) & 0xFFFF] + 
+                   64*sintabf[((t << 8) + (x << 8)) & 0xFFFF] +
+                   32*sintabf[((t << 8) + (y << 8) + 0x4000) & 0xFFFF]; 
+            ay = y + 64*sintabf[((t << 7) + (y << 4)) & 0xFFFF] +
                   (32*sintabf[((x << 6) + (t << 6)) & 0xFFFF] + 32) * 
-                   sintabf[((x << 6) + (y << 8) + (t << 4)) & 0xFFFF] + 
-                   64*sintabf[((t << 8) + (y << 10)) & 0xFFFF] +
-                   32*sintabf[((t << 7) + (x << 9)) & 0xFFFF]; 
+                   sintabf[((x << 6) + (y << 6) + (t << 4)) & 0xFFFF] + 
+                   64*sintabf[((t << 8) + (y << 7)) & 0xFFFF] +
+                   32*sintabf[((t << 7) + (x << 6) + 0x4000) & 0xFFFF]; 
             
-            u = (int32_t)(ax * 256);
-            v = (int32_t)(ay * 256);
+            u = (int32_t)(ax * 256);        // rescale to 24.8 fixedpoint
+            v = (int32_t)(ay * 256);        // rescale to 24.8 fixedpoint
             
             grid[tptr].u = u;// & 0xFFFFFFFF;
             grid[tptr].v = v;// & 0xFFFFFFFF;
@@ -178,6 +187,7 @@ void makeGrid(uint32_t frameCounter) {
     }
 }
 
+// load texture from file
 void makeTexture(const char *filename) {
     
     BITMAPV5HEADER bmphead;
@@ -190,44 +200,37 @@ void makeTexture(const char *filename) {
     
     // convert palette from 8 bit to 6 bit
     for (size_t i = 0; i < 256; i++) texturePal[i].val = (bmppal[i] >> 2) & 0x3F3F3F;
-    
-    /*
-    uint8_t *p = texture;
-    
-    const float ee = 1e-4;
-    
-    // simple x ^ y pattern
-    for (int32_t y = -TEXTURE_RES/2; y < TEXTURE_RES/2; y++) {
-        for (int32_t x = -TEXTURE_RES/2; x < TEXTURE_RES/2; x++) {
-            *p++ = max(min(((int)(0x20000 / ((x*x ^ y*y) + ee))), 255), 0);
-        }
-    }
-    */
 }
 
 
+// set texture palette
 void makePalette() {
-    // init palette
-    //vgaPalColor pal[256];
-    //for (size_t i = 0; i < 256; i++) pal[i].val = (i >> 2) * 0x010101;
-    
-    // and set it
     vgaSetPalette(texturePal, 0, 256);
 }
 
-// and finally, the main loop
 
-int main() {
+// and finally, the main loop
+int main(int argc, char *argv[]) {
+    size_t frameCounter = 0, tick = 0;
+    
+    if ((argc >= 2) && (strstr(argv[1], "?") != 0)) {
+        printf("usage: bmpdist.exe [texture.bmp] [NOVSYNC]\n");
+        return 0;
+    }
+    char *filename  = ((argc >= 2) ? argv[1] : "dutch8.bmp");
+    bool  noVsync   = ((argc >= 3) && (strstr(strupr(argv[2]), "NOVSYNC") != 0));
+    
+    // init
     initSintab();
-    makeTexture("dutch8.bmp");
+    makeTexture(filename);
     rtc_initTimer(RTC_TIMER_RATE_1024HZ);
     vgaInit();
     vgaSetMode(0x13);
     makePalette();
     
-    size_t frameCounter = 0, tick = 0;
+    // main loop
     while (!kbhit()) {
-        vgaVsync();
+        if (!noVsync) vgaVsync();
         vgaMemcpyA000(screen, 0, X_RES*Y_RES);
         
         makeGrid(tick);
@@ -240,4 +243,11 @@ int main() {
     vgaSetMode(0x3);
     vgaDone();
     rtc_freeTimer();
+    
+    // print timing results
+    {
+        uint32_t num    = ((frameCounter * 1024) / tick);
+        uint32_t denom  = ((frameCounter * 1024 * 1000) / tick) - (num * 1000);
+        printf("%u RTC ticks in %u frames - %d.%d fps", tick, frameCounter, num, denom);
+    }
 }
