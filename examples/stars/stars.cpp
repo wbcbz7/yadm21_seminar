@@ -65,12 +65,12 @@ vec3x generateStar() {
 
 void makeSintab() {
     // iterative sine generator from https://www.musicdsp.org/en/latest/Synthesis/10-fast-sine-and-cosine-calculation.html
-    // a = (int)(65536.0*2.0*sin(PI/SINTAB_SIZE)), realculate it yourself for other SINTAB_SIZE
-    int32_t a = 402, s[2] = {65536., 0.};
+    // c = (int)(65536.0*2.0*sin(PI/SINTAB_SIZE)), realculate it yourself for other SINTAB_SIZE
+    int32_t a = 65536, b = 0, c = 402;
     for (size_t i = 0; i < SINTAB_SIZE; i++) {
-        sintab[i] = s[1];
-        s[0] -= imul16(a,s[1]);
-        s[1] += imul16(a,s[0]);
+        sintab[i] = b;
+        a -= imul16(b,b);
+        b += imul16(a,c);
     }
 }
 
