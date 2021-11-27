@@ -4,5 +4,14 @@
 
 
 
-TODO: make it :)
+## examples
 
+at this time, Open Watcom C++ is required (I hadn't enough time to test it on DJGPP):
+
+- bpmdist - UV grid texture mapping-based bitmap distortion
+
+- cpuid - CPUID exmaple
+- metaxor - moire aka interference effect for EGA 640x350
+- rtc_test - RTC periodic timer (IRQ8) timing example
+- stars - simple starfield
+- tunnel - table mapping 
