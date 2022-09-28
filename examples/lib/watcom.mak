@@ -24,7 +24,7 @@ CFLAGS   = -5r -fp5 -fpi87 -zp16 -oneatx -ei -s -d$(DLEVEL) -i=$(INCLUDE) -bt=$(
 LFLAGS   = -f obj -l $<.lst
 
 # object files
-OBJS     = dpmi.obj rtctimer.obj mycpuid.obj tgaload.obj bmpload.obj vga.obj
+OBJS     = dpmi.obj rtctimer.obj mycpuid.obj tgaload.obj bmpload.obj vga.obj vbe.obj
 		   
 OBJSTR   = file {$(OBJS)}
 

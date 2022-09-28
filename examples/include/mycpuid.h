@@ -73,15 +73,18 @@ enum {
 
 // cpuid structure
 typedef struct {
-    unsigned long   supported;
-    unsigned long   highestLeaf;
+    uint32_t   supported;
+    uint32_t   highestLeaf;
     
-    unsigned long   family;
-    unsigned long   model;
-    unsigned long   stepping;
+    uint32_t   family;
+    uint32_t   model;
+    uint32_t   stepping;
+
+    uint32_t   extfamily;
+    uint32_t   extmodel;
     
-    unsigned long   flags;
-    unsigned long   extflags;
+    uint32_t   flags;
+    uint32_t   extflags;
     
     // CPU vendor string, returned by leaf 0
     char            str[13];

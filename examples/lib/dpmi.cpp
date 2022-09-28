@@ -7,8 +7,8 @@
 #endif
 
 /*
-   some useful DPMI functions
-   by wbcbz7 zo.oz.zolb - l5.ll.zozl
+    some useful DPMI functions
+    by wbcbz7 zo.oz.zolb - l5.ll.zozl
 
     this mostly covers frequently used DPMI 0.9 calls (+ some 1.0), and some DOS extender vendor extensions
     it was never meant to be a complete DPMI adapter, so if you have something missing here, feel free to
@@ -42,6 +42,12 @@ void* dpmi_ptr16_16_to_flat32(unsigned long ptr16_16) {
 // expand 16:16 far pointer to 16:32, no selector validity checks
 void _far *dpmi_ptr16_16_to_16_32(unsigned long ptr16_16) {
     return MK_FP(ptr16_16 >> 16, ptr16_16 & 0xFFFF);
+}
+
+// code size optimisation :)
+static void dpmi_zero_reg_structs() {
+    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
+    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
 }
 
 //-----------------------
@@ -82,8 +88,7 @@ Notes:
 */
 
 unsigned int dpmi_getdescriptors(unsigned long count) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0000;
     dpmi_regs.w.cx = (unsigned short)count;
@@ -125,8 +130,7 @@ Notes:
 */
 
 void dpmi_freedescriptor(unsigned long desc) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0001;
     dpmi_regs.w.bx = (unsigned short)desc;
@@ -165,8 +169,7 @@ Notes:
 */
 
 unsigned long dpmi_segtodesc(unsigned long segment) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0002;
     dpmi_regs.w.bx = (unsigned short)segment;
@@ -201,8 +204,7 @@ Notes:
 */
 
 unsigned long dpmi_selectorincrement() {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0003;
     
@@ -244,8 +246,7 @@ Notes:
 // and yes, returns LINEAR address (usually fine under watcom)
 
 void* dpmi_getsegmentbase(unsigned long selector) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0006;
     dpmi_regs.w.bx = (unsigned short)selector;
@@ -341,8 +342,7 @@ Notes:
 */
 
 void dpmi_setsegmentbase(unsigned long selector, void *base) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0007;
     dpmi_regs.w.bx = (unsigned short)selector;
@@ -403,8 +403,7 @@ Notes:
 */
 
 void dpmi_setsegmentlimit(unsigned long selector, unsigned long limit) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0008;
     dpmi_regs.w.bx = (unsigned short)selector;
@@ -480,8 +479,7 @@ Notes:
 */
 
 void dpmi_setaccessrights(unsigned long selector, unsigned long rights) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0009;
     dpmi_regs.w.bx = (unsigned short)selector;
@@ -546,8 +544,7 @@ Notes:
 // yay, selfmodifying code! \o/
 // (watcom allows it with near pointers 'cuz CS base/limit = DS base/limit :)
 unsigned long dpmi_getalias(unsigned long selector) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x000A;
     dpmi_regs.w.bx = (unsigned short)selector;
@@ -586,8 +583,7 @@ Out:
 */
 
 void dpmi_getdescriptor(unsigned long selector, _dpmi_descriptor __far *buffer) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x000B;
     dpmi_regs.w.bx  = (unsigned short)selector;
@@ -638,8 +634,7 @@ Out:
 */
 
 void dpmi_setdescriptor(unsigned long selector, _dpmi_descriptor __far *buffer) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x000C;
     dpmi_regs.w.bx  = (unsigned short)selector;
@@ -676,8 +671,7 @@ Out:
     BX	   = size of largest available block
 */
 void dpmi_getdosmem(int size, _dpmi_ptr *p, int *largestAvailBlock) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x100;
     dpmi_regs.w.bx = (unsigned short)size;
@@ -696,8 +690,7 @@ void dpmi_getdosmem(int size, _dpmi_ptr *p, int *largestAvailBlock) {
 
 // helper routine to get largest available block
 int dpmi_dosmemlargestavail() {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x100;
     dpmi_regs.w.bx = -1;            // unrealistic size
@@ -729,8 +722,7 @@ Out:
     AX	   = DOS error code
 */
 void dpmi_freedosmem(_dpmi_ptr *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x101;
     dpmi_regs.w.dx = p->selector;
@@ -815,8 +807,7 @@ Notes:
   on the protected mode stack.
 */
 void dpmi_rminterrupt(int int_num, _dpmi_rmregs *regs) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x300;
     dpmi_regs.w.bx  = (int_num & 0xFF);
@@ -828,6 +819,95 @@ void dpmi_rminterrupt(int int_num, _dpmi_rmregs *regs) {
     
     dpmi_status = dpmi_regs.x.cflag;
     dpmi_returncode = dpmi_regs.w.ax;
+}
+
+/*
+2.21 - Function 0301h - Call Real Mode Procedure With Far Return Frame:
+-----------------------------------------------------------------------
+
+  Simulates a FAR CALL to a real mode procedure. The called procedure must
+return by executing a RETF instruction.
+
+In:
+  AX     = 0301h
+  BH     = must be 0
+  CX     = number of words to copy from the protected mode stack to the real
+           mode stack
+  ES:EDI = selector:offset of real mode register data structure in the
+           following format:
+
+           Offset  Length  Contents
+           00h     4       EDI
+           04h     4       ESI
+           08h     4       EBP
+           0ch     4       reserved, ignored
+           10h     4       EBX
+           14h     4       EDX
+           18h     4       ECX
+           1ch     4       EAX
+           20h     2       CPU status flags
+           22h     2       ES
+           24h     2       DS
+           26h     2       FS
+           28h     2       GS
+           2ah     2       IP
+           2ch     2       CS
+           2eh     2       SP
+           30h     2       SS
+
+Out:
+  if successful:
+    carry flag clear
+    ES:EDI = selector offset of modified real mode register data structure
+
+  if failed:
+    carry flag set
+
+Notes:
+) The CS:IP in the real mode register data structure specifies the address of
+  the real mode procedure to call.
+
+) If the SS:SP fields in the real mode register data structure are zero, a
+  real mode stack will be provided by the host. Otherwise the real mode SS:SP
+  will be set to the specified values before the procedure is called.
+
+) Values placed in the segment register positions of the data structure must
+  be valid for real mode. That is, the values must be paragraph addresses, not
+  protected mode selectors.
+
+) The target real mode procedure must return with the stack in the same state
+  as when it was called. This means that the real mode code may switch stacks
+  while it is running, but must return on the same stack that it was called
+  on and must return with a RETF and should not clear the stack of any
+  parameters that were passed to it on the stack.
+
+) When this function returns, the real mode register data structure will
+  contain the values that were returned by the real mode procedure. The CS:IP
+  and SS:SP values will be unmodified in the data structure.
+
+) It is the caller's responsibility to remove any parameters that were pushed
+  on the protected mode stack.
+*/
+
+void dpmi_rmcall(_dpmi_rmregs *regs) {
+    dpmi_zero_reg_structs();
+    
+    dpmi_regs.w.ax  = 0x301;
+    dpmi_regs.w.bx  = 0;
+    
+    dpmi_sregs.es   = FP_SEG(regs);
+    dpmi_regs.x.edi = FP_OFF(regs);
+    
+    int386x(0x31, &dpmi_regs, &dpmi_regs, &dpmi_sregs);
+    
+    dpmi_status = dpmi_regs.x.cflag;
+    dpmi_returncode = dpmi_regs.w.ax;
+}
+
+void dpmi_rmcall_ex(_dpmi_rmregs *regs, _dpmi_rmpointer ptr) {
+    regs->CS = ptr.segment; regs->IP = ptr.offset;
+    regs->SS = regs->SP = 0;
+    dpmi_rmcall(regs);
 }
 
 /*
@@ -860,8 +940,7 @@ Notes:
   boundary.
 */
 void *dpmi_mapphysical(unsigned long size, void *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x800;
     
@@ -902,8 +981,7 @@ Notes:
   previously mapped to linear addresses with function 0801h.
 */  
 void dpmi_unmapphysical(void *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x801;
     
@@ -945,8 +1023,7 @@ NOTE 1: this function converts realmode seg:ofs pointer to linear address in
 */
 
 void* dpmi_getrmvect(int num) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x200;
     dpmi_regs.h.bl = (unsigned char) num;
@@ -960,8 +1037,7 @@ void* dpmi_getrmvect(int num) {
 }
 
 _dpmi_rmpointer dpmi_getrmvect_ex(int num) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x200;
     dpmi_regs.h.bl = (unsigned char) num;
@@ -1000,8 +1076,7 @@ Notes:
 */
 
 void dpmi_setrmvect(int num, void  *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.x.eax = 0x201;
     dpmi_regs.x.ebx = num;
@@ -1016,8 +1091,7 @@ void dpmi_setrmvect(int num, void  *p) {
 }
 
 void dpmi_setrmvect_ex(int num, _dpmi_rmpointer p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.x.eax = 0x201;
     dpmi_regs.x.ebx = num;
@@ -1060,8 +1134,7 @@ Notes:
   real mode handlers as DPMI specifications state.
 */
 void __far * dpmi_getpmexception(int num) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x202;
     dpmi_regs.h.bl = (unsigned char) num;
@@ -1106,8 +1179,7 @@ Notes:
   exception. It will not be called if you hook it with function 0205h.
 */
 void dpmi_setpmexception(int num, void __far *proc) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x205;
     dpmi_regs.h.bl = (unsigned char)num;
@@ -1143,8 +1215,7 @@ Notes:
   segment address.
 */
 void __far * dpmi_getpmvect(int num) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x204;
     dpmi_regs.h.bl = (unsigned char) num;
@@ -1184,8 +1255,7 @@ Notes:
   exception. It will not be called if you hook it with function 0205h.
 */
 void dpmi_setpmvect(int num, void __far *proc) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x205;
     dpmi_regs.h.bl = (unsigned char) num;
@@ -1231,8 +1301,7 @@ Notes:
   should release a callback that it is no longer using.
 */
 void* dpmi_getcallback(void __far *proc, _dpmi_rmregs __far *rmregs) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x303;
     
@@ -1252,8 +1321,7 @@ void* dpmi_getcallback(void __far *proc, _dpmi_rmregs __far *rmregs) {
 }
 
 _dpmi_rmpointer dpmi_getcallback_ex(void __far *proc, _dpmi_rmregs __far *rmregs) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x303;
     
@@ -1297,8 +1365,7 @@ Notes:
   any callback that it is no longer using.
 */
 void dpmi_freecallback(void *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x304;
     
@@ -1313,8 +1380,7 @@ void dpmi_freecallback(void *p) {
 }
 
 void dpmi_freecallback_ex(_dpmi_rmpointer p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x304;
     
@@ -1367,8 +1433,8 @@ Notes:
 */
 
 void dpmi_getinfo(_dpmi_info *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    if (p == NULL) return;
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x0400;
     
@@ -1425,8 +1491,8 @@ Notes:
 */
 
 void dpmi_getmeminfo(_dpmi_mem_info __far *p) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    if (p == NULL) return;
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0x500;
     
@@ -1435,6 +1501,90 @@ void dpmi_getmeminfo(_dpmi_mem_info __far *p) {
     
     int386x(0x31, &dpmi_regs, &dpmi_regs, &dpmi_sregs);
     
+    dpmi_status = dpmi_regs.x.cflag;
+    dpmi_returncode = dpmi_regs.w.ax;
+}
+
+/*
+2.29 - Function 0501h - Allocate Memory Block:
+----------------------------------------------
+
+  Allocates a block of extended memory.
+
+In:
+  AX     = 0501h
+  BX:CX  = size of block in bytes (must be non-zero)
+
+Out:
+  if successful:
+    carry flag clear
+    BX:CX  = linear address of allocated memory block
+    SI:DI  = memory block handle (used to resize and free block)
+
+  if failed:
+    carry flag set
+
+Notes:
+) The allocated block is guaranteed to have at least dword alignment.
+
+) This function does not allocate any descriptors for the memory block. It is
+  the responsibility of the client to allocate and initialize any descriptors
+  needed to access the memory with additional function calls.
+
+*/
+
+void dpmi_getmem(unsigned long size, _dpmi_memory_block *p) {
+    if (p == NULL) return;
+    dpmi_zero_reg_structs();
+    
+    dpmi_regs.w.ax = 0x501;
+    
+    dpmi_regs.w.bx = (unsigned short)(size >> 16);
+    dpmi_regs.w.cx = (unsigned short)(size & 0xFFFF);
+    
+    int386x(0x31, &dpmi_regs, &dpmi_regs, &dpmi_sregs);
+    
+    p->handle    = (unsigned long)(((unsigned long)dpmi_regs.w.si << 16) | dpmi_regs.w.di);
+    p->linearPtr = (void *)       (((unsigned long)dpmi_regs.w.bx << 16) | dpmi_regs.w.cx);
+
+    dpmi_status = dpmi_regs.x.cflag;
+    dpmi_returncode = dpmi_regs.w.ax;
+}
+
+/*
+2.30 - Function 0502h - Free Memory Block:
+------------------------------------------
+
+  Frees a memory block previously allocated with the Allocate Memory Block
+function (0501h).
+
+In:
+  AX     = 0502h
+  SI:DI  = memory block handle
+
+Out:
+  if successful:
+    carry flag clear
+
+  if failed:
+    carry flag set
+
+Notes:
+) No descriptors are freed by this call. It is the client's responsibility to
+  free any descriptors that it previously allocated to 
+*/
+
+void dpmi_freemem(_dpmi_memory_block *p) {
+    if (p == NULL) return;
+    dpmi_zero_reg_structs();
+    
+    dpmi_regs.w.ax = 0x501;
+    
+    dpmi_regs.w.si = (unsigned short)(p->handle >> 16);
+    dpmi_regs.w.di = (unsigned short)(p->handle & 0xFFFF);
+    
+    int386x(0x31, &dpmi_regs, &dpmi_regs, &dpmi_sregs);
+
     dpmi_status = dpmi_regs.x.cflag;
     dpmi_returncode = dpmi_regs.w.ax;
 }
@@ -1515,8 +1665,7 @@ Notes:
 
 void dpmi_getextenderinfo(_dpmi_extender_info *p) {
     if (p == NULL) return;
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax = 0xEEFF;
     
@@ -1588,8 +1737,7 @@ oh wait we have RBIL:
 */
 
 void _far *dpmi_getvendorapi(char _far *id) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
      
     void _far *rtn = NULL;
     
@@ -1607,8 +1755,7 @@ void _far *dpmi_getvendorapi(char _far *id) {
         
     } else {
         // if failed, try INT2F/AX=168A
-        memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-        memset(&dpmi_regs,  0, sizeof(dpmi_regs));
+        dpmi_zero_reg_structs();
         
         dpmi_regs.w.ax  = 0x168A;
         dpmi_sregs.ds   = FP_SEG(id);
@@ -1666,8 +1813,7 @@ Out:
 // as you see, it accepts LINEAR address, not a far pointer! (again fine under watcom)
 
 void dpmi_lockmemory(void *p, unsigned long size) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x600;
     
@@ -1706,8 +1852,7 @@ Out:
 */
 
 void dpmi_unlockmemory(void *p, unsigned long size) {
-    memset(&dpmi_sregs, 0, sizeof(dpmi_sregs));
-    memset(&dpmi_regs, 0, sizeof(dpmi_regs));
+    dpmi_zero_reg_structs();
     
     dpmi_regs.w.ax  = 0x601;
     
@@ -1837,6 +1982,8 @@ void rmintr(int intnum, union REGPACK *r) {
     
     memcpy(r, &regs, sizeof(union REGPACK));
 }
+
+#ifdef _DPMI_VENDOR_API
 
 /*
     danger zone
@@ -2062,6 +2209,7 @@ _dos32a_performance_counters _far *dos32a_get_performance_counters(void _far (*a
     return (_dos32a_performance_counters _far *)MK_FP(sel, ofs);
 }
 
+#endif
 
 // DJGPP compatibility stuff
 #ifdef _DPMI_DJGPP_COMPATIBILITY

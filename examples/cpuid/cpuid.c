@@ -3,10 +3,6 @@
 
 #include "mycpuid.h"
 
-struct cpuidRequest_t {
-    uint32_t eax, ebx, ecx, edx;
-} cpuidRequest;
-
 cpuid_t cpuidInfo;
 
 int main(int argc, char *argv[]) {
@@ -22,6 +18,7 @@ int main(int argc, char *argv[]) {
         // test for some flags, i.e. MMX support
         printf("\n");
         printf("test CPU flags for MMX support: %s present\n", (cpuidInfo.flags & CPUID_FEATURE_MMX) ? "is" : "not"); 
+        printf("test CPU flags for TSC support: %s present\n", (cpuidInfo.flags & CPUID_FEATURE_TSC) ? "is" : "not"); 
     }
     
     return 0;

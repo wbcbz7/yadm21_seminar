@@ -6,7 +6,7 @@
 // RTC timer header
 #include <rtctimer.h>
 
-// cunstom timer tick counter
+// custom timer tick counter
 volatile uint32_t myTimerTick = 0;
 
 // custom timer procedure - called inside timer ISR

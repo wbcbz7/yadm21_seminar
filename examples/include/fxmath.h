@@ -12,11 +12,11 @@
 #define max(a, b)      ((a) > (b) ? (a) : (b))
 #endif
 
-#ifndef max
+#ifndef sgn
 #define sgn(a)         ((a) < (0) ? (-1) : ((a) > (0) ? (1) : (0)))
 #endif
 
-#ifndef max
+#ifndef clamp
 #define clamp(a, l, h) ((a) > (h) ? (h) : ((a) < (l) ? (l) : (a)))
 #endif
 

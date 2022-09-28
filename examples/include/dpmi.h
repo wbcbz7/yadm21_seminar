@@ -8,6 +8,7 @@
 // by wbc\\bz7 zo.oz.zolb
 
 // define _DPMI_DJGPP_COMPATIBILITY for adding DJGPP compatibility functions
+// define _DPMI_VENDOR_API          for adding DPMI vendoe API functions
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,10 +80,10 @@ typedef struct {
 } _dpmi_extender_info;
 
 enum {
-        DPMI_SYSTEM_RAW = 0,
-        DPMI_SYSTEM_XMS,
-        DPMI_SYSTEM_VCPI,
-        DPMI_SYSTEM_DPMI,
+    DPMI_SYSTEM_RAW = 0,
+    DPMI_SYSTEM_XMS,
+    DPMI_SYSTEM_VCPI,
+    DPMI_SYSTEM_DPMI,
 };
 
 typedef struct {
@@ -98,6 +99,11 @@ typedef struct {
     unsigned long pagefileSize;             // in pages
     unsigned char reserved[12];
 } _dpmi_mem_info;
+
+typedef struct {
+    void*         linearPtr;
+    unsigned long handle;
+} _dpmi_memory_block;
 
 // dpmi realmode pointer struct
 typedef union {
@@ -143,9 +149,15 @@ unsigned long dpmi_iswriteable(unsigned long selector);
 
 void dpmi_getdosmem(int size, _dpmi_ptr *p, int *largestAvailBlock = NULL);    // SIZE IN PARAGRAPHS!!!!
 int dpmi_dosmemlargestavail();
-
 void dpmi_freedosmem(_dpmi_ptr *p);
+
+void dpmi_getmem (unsigned long size, _dpmi_memory_block *p);
+void dpmi_freemem(_dpmi_memory_block *p);
+
 void dpmi_rminterrupt(int int_num, _dpmi_rmregs *regs);
+void dpmi_rmcall(_dpmi_rmregs *regs);
+void dpmi_rmcall_ex(_dpmi_rmregs *regs, _dpmi_rmpointer ptr);
+
 void * dpmi_mapphysical(unsigned long size, void *p);
 void dpmi_unmapphysical(void *p);
 
@@ -180,7 +192,7 @@ void rmintr(int intnum, union REGPACK *r);
 extern unsigned int dpmi_status;
 extern unsigned int dpmi_returncode;
 
-// dos32a stuff
+#ifdef _DPMI_VENDOR_API
 
 typedef struct {
     void _far       *gdt;
@@ -217,7 +229,7 @@ void dos32a_get_gdt_idt(void _far (*apientry)(), _dos32a_gdt_idt_info *p);
 void dos32a_get_kernel_selectors(void _far (*apientry)(), _dos32a_kernel_selectors *p);
 _dos32a_performance_counters _far *dos32a_get_performance_counters(void _far (*apientry)());
 
-
+#endif
 
 #ifdef _DPMI_DJGPP_COMPATIBILITY
 

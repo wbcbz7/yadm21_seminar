@@ -107,12 +107,14 @@ uint32_t cpuidget(cpuid_t *p) {
     // get additional info
     cpuid(1, &_eax, &_ebx, &_ecx, &_edx);
     
-    p->family   = (_eax >> 8) & 0xF;
-    p->model    = (_eax >> 4) & 0xF;
-    p->stepping = (_eax >> 0) & 0xF;
+    p->extfamily    = (_eax >> 20) & 0xFF;
+    p->extmodel     = (_eax >> 16) & 0xF;
+    p->family       = (_eax >> 8) & 0xF;
+    p->model        = (_eax >> 4) & 0xF;
+    p->stepping     = (_eax >> 0) & 0xF;
     
-    p->flags    = (_edx);
-    p->extflags = (_ecx);
+    p->flags        = (_edx);
+    p->extflags     = (_ecx);
     
     return (_eax >> 8) & 0xF;
 }
