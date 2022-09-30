@@ -48,7 +48,7 @@ int test8bpp(uint8_t *pixels, vbe_ModeInfoBlock *modeinfo) {
     // using VBE functin 0x08 for setting the palette, and if it fails, revert back to VGA palette
     // if current mode defined as VGA compatible, then you can safely use VGA ports 3C7-3C9 for palette access
     vbe_SetPalette(palette, 0, 256, vbe_WAITRETRACE);
-    if (vbe_GetStatus() != 0x4F) {exit(0); vgaVsync(); vgaSetPalette(palette, 0, 256);}
+    if (vbe_GetStatus() != 0x4F) {vgaVsync(); vgaSetPalette(palette, 0, 256);}
     
     while (!kbhit()) {} getch();
 
